@@ -68,39 +68,44 @@ class ViterbiTrigramDecoder(object):
         self.backptr = np.zeros((len(s), Key.NUMBER_OF_CHARS, Key.NUMBER_OF_CHARS), dtype='int')
 
 
+        # Initialization
+        self.backptr[0, :, :] = Key.START_END
+        self.v[0, Key.START_END, :] = self.a[Key.START_END, Key.START_END, :] + self.b[index[0], :]
+
+
         argMax = -1
         for t in range(1, len(index)):  # Eftersom basfall gjort -> börja på 1, vi itererar alla chars sidleds.
             for k in range(Key.NUMBER_OF_CHARS):  # Iterera nedåt, Number of characters = Amount of hidden layers
-                for s in range(Key.NUMBER_OF_CHARS):
+                for s in range(Key.NUMBER_OF_CHARS):    # Iterera nedåt genom möjligheterna för alla tredje karaktärer
 
-
-
-                    wordProb = self.b[index[t]][k][s]
+                    wordProb = self.b[index[t]][k]
                     curMax = float("-inf")
 
                     for i in range(Key.NUMBER_OF_CHARS):
-                        temp = self.v[t - 1][i][s] + self.a[i][k][s] + wordProb
+                        temp = self.v[t - 1][i][s] + self.a[i][s][k] + wordProb
 
                         if temp > curMax:
                             curMax = temp
                             argMax = i
 
-                    self.v[t][k][s] = curMax
-                    self.backptr[t][k][s] = argMax
+                    self.v[t][s][k] = curMax
+                    self.backptr[t][s][k] = argMax
 
         res = ""
         t = len(index) - 2
-        curletter = self.backptr[t + 1][Key.START_END]
+        curletter = self.backptr[t + 1][Key.START_END][Key.START_END]
+        curletter2 = self.backptr[t + 1][curletter][Key.START_END]
+
         while t >= 0:
             res += Key.index_to_char(curletter)
-            curletter = self.backptr[t][curletter]
+            curletter, curletter2 = curletter2, self.backptr[t][curletter2][curletter]
             t -= 1
 
         # Finally return the result
 
         # REPLACE THE LINE BELOW WITH YOUR CODE
 
-        return res[::-1]
+        return res[:1:-1]
 
 
 
@@ -156,13 +161,13 @@ def main():
 
     if arguments.check:
         payload = json.dumps({
-            'a': d.a.tolist(), 
+            'a': d.a.tolist(),
             'string': s1,
-            'result': result 
+            'result': result
         })
         response = requests.post(
             'https://language-engineering.herokuapp.com/lab3_trigram',
-            data=payload, 
+            data=payload,
             headers={'content-type': 'application/json'}
         )
         response_data = response.json()

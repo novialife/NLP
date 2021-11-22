@@ -89,8 +89,8 @@ class ViterbiBigramDecoder(object):
                 self.backptr[t][k] = argMax
         # Induction step
 
-        # YOUR CODE HERE
 
+        # YOUR CODE HERE
         res = ""
         t = len(index) - 2
         curletter = self.backptr[t+1][Key.START_END]
@@ -149,7 +149,6 @@ def main():
     # Give the filename of the bigram probabilities as a command line argument
     d = ViterbiBigramDecoder(arguments.probs)
 
-    print(s1)
     # Append an extra "END" symbol to the input string, to indicate end of sentence.
     result = d.viterbi(s1 + Key.index_to_char(Key.START_END))
 
