@@ -11,7 +11,7 @@ Created 2017 by Johan Boye, Patrik Jonell and Dmytro Kalpakchi.
 
 #  ------------- Hyperparameters ------------------ #
 
-LEARNING_RATE = 0.01  # The learning rate.
+LEARNING_RATE = 0.1  # The learning rate.
 CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
 MAX_ITERATIONS = 100  # Maximal number of passes through the datapoints in stochastic gradient descent.
 MINIBATCH_SIZE = 1000  # Minibatch size (only for minibatch gradient descent)
@@ -69,7 +69,15 @@ class BinaryLogisticRegression(object):
         :param      y:    The correct labels
         """
         # REPLACE THE COMMAND BELOW WITH YOUR CODE
-        return 0
+
+        total = 0
+        for i in range(self.DATAPOINTS):
+            if self.y[i] == 1:
+                total += -np.log(self.sigmoid(np.sum(np.dot(self.theta, self.x[i][:]))))
+            else:
+                total += -np.log(1-self.sigmoid(np.sum(np.dot(self.theta, self.x[i][:]))))
+
+        return total * (1/self.DATAPOINTS)
 
     def sigmoid(self, z):
         """
@@ -81,21 +89,18 @@ class BinaryLogisticRegression(object):
         """
         Computes the conditional probability P(label|datapoint)
         """
-
         # REPLACE THE COMMAND BELOW WITH YOUR CODE
-
-        return 0
+        return self.sigmoid(np.sum(np.dot(self.theta, datapoint) ** label)) * (1 - self.sigmoid(np.sum(np.dot(self.theta, datapoint)) ** (1 - label)))
 
     def compute_gradient_for_all(self):
         """
         Computes the gradient based on the entire dataset
         (used for batch gradient descent).
         """
-
         for k in range(self.FEATURES):
             total = 0
-            for i in range(1, self.DATAPOINTS):
-                total += self.x[i][k] * (self.sigmoid(np.dot(np.transpose(self.theta), self.x[i][:]))) - self.y[i]
+            for i in range(0, self.DATAPOINTS):
+                total += self.x[i][k] * (self.sigmoid(np.sum(np.dot(self.x[i][:], self.theta))) - self.y[i])
             self.gradient[k] = (1 / self.DATAPOINTS) * total
 
 
@@ -112,8 +117,7 @@ class BinaryLogisticRegression(object):
         Computes the gradient based on a single datapoint
         (used for stochastic gradient descent).
         """
-
-        # YOUR CODE HERE
+        self.gradient[datapoint[0]] = self.x[datapoint[1]][datapoint[0]]*(self.sigmoid(np.sum(np.dot(self.theta, self.x)))-self.y[datapoint[1]])
 
     def stochastic_fit(self):
         """
@@ -121,6 +125,16 @@ class BinaryLogisticRegression(object):
         """
         self.init_plot(self.FEATURES)
 
+        diff = 1
+        for j in range(10**7):
+            i = random.randint(0,self.DATAPOINTS)
+            for k in range(self.FEATURES):
+                self.compute_gradient([k, i])
+
+            for k in range(self.FEATURES):
+                self.theta[k] = self.theta[k] - (LEARNING_RATE * self.gradient[k])
+
+            self.update_plot(self.loss(self.x, self.y))
         # YOUR CODE HERE
 
     def minibatch_fit(self):
@@ -135,6 +149,7 @@ class BinaryLogisticRegression(object):
         """
         Performs Batch Gradient Descent
         """
+        self.init_plot(self.FEATURES)
 
         diff = 1
         while diff > CONVERGENCE_MARGIN:
@@ -144,9 +159,10 @@ class BinaryLogisticRegression(object):
                 self.theta[k] = self.theta[k] - (LEARNING_RATE * self.gradient[k])
 
             for i in self.gradient:
-                diff += i ** 2
+                diff += (i ** 2)
 
-        self.init_plot(self.FEATURES)
+            self.update_plot(self.loss(self.x, self.y))
+
 
     def classify_datapoints(self, test_data, test_labels):
         """
