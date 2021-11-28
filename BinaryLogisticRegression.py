@@ -98,7 +98,6 @@ class BinaryLogisticRegression(object):
         Computes the gradient based on the entire dataset
         (used for batch gradient descent).
         """
-
         for k in range(0, self.FEATURES):
             total = 0
             for i in range(1, self.DATAPOINTS):
@@ -114,8 +113,16 @@ class BinaryLogisticRegression(object):
         Computes the gradient based on a minibatch
         (used for minibatch gradient descent).
         """
-
         # YOUR CODE HERE
+        for k in range(0, self.FEATURES):
+            total = 0
+            for i in range(minibatch, minibatch+MINIBATCH_SIZE):
+                x = self.x[i][k]
+                y = self.y[i]
+                dot = np.dot(self.x[i][:], np.transpose(self.theta))
+                sigma = self.sigmoid(dot)
+                total += x*(sigma-y)
+            self.gradient[k] = total
 
     def compute_gradient(self, datapoint):
         """
@@ -133,7 +140,7 @@ class BinaryLogisticRegression(object):
         """
         Performs Stochastic Gradient Descent.
         """
-        self.init_plot(self.FEATURES)
+        #self.init_plot(self.FEATURES)
 
         for j in range(10 ** 7):
             i = random.randint(0, self.DATAPOINTS-1)
@@ -142,7 +149,6 @@ class BinaryLogisticRegression(object):
 
             for k in range(self.FEATURES):
                 self.theta[k] = self.theta[k] - (LEARNING_RATE * self.gradient[k])
-        print("Success!")
             #self.update_plot(self.loss(self.x, self.y))
         # YOUR CODE HERE
 
@@ -150,9 +156,19 @@ class BinaryLogisticRegression(object):
         """
         Performs Mini-batch Gradient Descent.
         """
-        self.init_plot(self.FEATURES)
+        #self.init_plot(self.FEATURES)
 
-        # YOUR CODE HERE
+        # self.init_plot(self.FEATURES)
+        _ = 10000
+        while _ > CONVERGENCE_MARGIN:
+            minibatch = random.randint(0, self.DATAPOINTS-MINIBATCH_SIZE-1)
+            self.compute_gradient_minibatch(minibatch)
+            for k in range(0, self.FEATURES):
+                self.theta[k] = self.theta[k] - LEARNING_RATE * self.gradient[k]
+
+            # self.update_plot(self.loss(self.x, self.y))
+            _ = np.sum(np.square(self.gradient))
+        print("Yay it converged!")
 
     def fit(self):
         """
@@ -170,13 +186,11 @@ class BinaryLogisticRegression(object):
             _ = np.sum(np.square(self.gradient))
         print("Yay it converged!")
 
-
-
     def classify_datapoints(self, test_data, test_labels):
         """
         Classifies datapoints
         """
-        print('Model parameters:');
+        print('Model parameters:')
 
         print('  '.join('{:d}: {:.4f}'.format(k, self.theta[k]) for k in range(self.FEATURES)))
 
