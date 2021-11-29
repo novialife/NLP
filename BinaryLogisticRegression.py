@@ -9,21 +9,21 @@ This file is part of the computer assignments for the course DD1418/DD2418 Langu
 Created 2017 by Johan Boye, Patrik Jonell and Dmytro Kalpakchi.
 """
 
-#  ------------- Hyperparameters ------------------ #
-
-LEARNING_RATE = 0.01  # The learning rate.
-CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-MAX_ITERATIONS = 100  # Maximal number of passes through the datapoints in stochastic gradient descent.
-MINIBATCH_SIZE = 1000  # Minibatch size (only for minibatch gradient descent)
-
-
-# ----------------------------------------------------------------------
-
 class BinaryLogisticRegression(object):
     """
     This class performs binary logistic regression using batch gradient descent
     or stochastic gradient descent
     """
+
+    #  ------------- Hyperparameters ------------------ #
+
+    LEARNING_RATE = 0.01  # The learning rate.
+    CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
+    MAX_ITERATIONS = 100 # Maximal number of passes through the datapoints in stochastic gradient descent.
+    MINIBATCH_SIZE = 1000 # Minibatch size (only for minibatch gradient descent)
+
+    # ----------------------------------------------------------------------
+
 
     def __init__(self, x=None, y=None, theta=None):
         """
@@ -59,7 +59,10 @@ class BinaryLogisticRegression(object):
             # The current gradient.
             self.gradient = np.zeros(self.FEATURES)
 
+
+
     # ----------------------------------------------------------------------
+
 
     def loss(self, x, y):
         """
@@ -69,128 +72,86 @@ class BinaryLogisticRegression(object):
         :param      y:    The correct labels
         """
         # REPLACE THE COMMAND BELOW WITH YOUR CODE
+        
+        return 0
 
-        total = 0
-        for i in range(self.DATAPOINTS):
-            if self.y[i] == 1:
-                total += -np.log(self.sigmoid(np.dot(self.theta, self.x[i][:])))
-            else:
-                total += -np.log(1 - self.sigmoid(np.dot(self.theta, self.x[i][:])))
-
-        return total * (1 / self.DATAPOINTS)
 
     def sigmoid(self, z):
         """
         The logistic function.
         """
-        return 1.0 / (1 + math.exp(-z))
+        return 1.0 / ( 1 + math.exp(-z) )
+
 
     def conditional_prob(self, label, datapoint):
         """
         Computes the conditional probability P(label|datapoint)
         """
+
         # REPLACE THE COMMAND BELOW WITH YOUR CODE
-        return self.sigmoid(np.sum(np.dot(self.theta, datapoint) ** label)) * (
-                1 - self.sigmoid(np.sum(np.dot(self.theta, datapoint)) ** (1 - label)))
+
+        return 0
+
 
     def compute_gradient_for_all(self):
         """
         Computes the gradient based on the entire dataset
         (used for batch gradient descent).
         """
-        for k in range(0, self.FEATURES):
-            total = 0
-            for i in range(1, self.DATAPOINTS):
-                x = self.x[i][k]
-                y = self.y[i]
-                dot = np.dot(self.x[i][:], np.transpose(self.theta))
-                sigma = self.sigmoid(dot)
-                total += x*(sigma-y)
-            self.gradient[k] = total
+
+        # YOUR CODE HERE
+
 
     def compute_gradient_minibatch(self, minibatch):
         """
         Computes the gradient based on a minibatch
         (used for minibatch gradient descent).
         """
+        
         # YOUR CODE HERE
-        for k in range(0, self.FEATURES):
-            total = 0
-            for i in range(minibatch, minibatch+MINIBATCH_SIZE):
-                x = self.x[i][k]
-                y = self.y[i]
-                dot = np.dot(self.x[i][:], np.transpose(self.theta))
-                sigma = self.sigmoid(dot)
-                total += x*(sigma-y)
-            self.gradient[k] = total
+
 
     def compute_gradient(self, datapoint):
         """
         Computes the gradient based on a single datapoint
         (used for stochastic gradient descent).
         """
-        x = self.x[datapoint[1]][datapoint[0]]
-        y = self.y[datapoint[1]]
-        dot = np.dot(self.x[datapoint[1]][:], np.transpose(self.theta))
-        sigma = self.sigmoid(dot)
-        total = x*(sigma-y)
-        self.gradient[datapoint[0]] = total
+
+        # YOUR CODE HERE
+
 
     def stochastic_fit(self):
         """
         Performs Stochastic Gradient Descent.
         """
-        #self.init_plot(self.FEATURES)
+        self.init_plot(self.FEATURES)
 
-        for j in range(10 ** 7):
-            i = random.randint(0, self.DATAPOINTS-1)
-            for k in range(self.FEATURES):
-                self.compute_gradient([k, i])
-
-            for k in range(self.FEATURES):
-                self.theta[k] = self.theta[k] - (LEARNING_RATE * self.gradient[k])
-            #self.update_plot(self.loss(self.x, self.y))
         # YOUR CODE HERE
+
 
     def minibatch_fit(self):
         """
         Performs Mini-batch Gradient Descent.
         """
-        #self.init_plot(self.FEATURES)
+        self.init_plot(self.FEATURES)
 
-        # self.init_plot(self.FEATURES)
-        _ = 10000
-        while _ > CONVERGENCE_MARGIN:
-            minibatch = random.randint(0, self.DATAPOINTS-MINIBATCH_SIZE-1)
-            self.compute_gradient_minibatch(minibatch)
-            for k in range(0, self.FEATURES):
-                self.theta[k] = self.theta[k] - LEARNING_RATE * self.gradient[k]
+        # YOUR CODE HERE
 
-            # self.update_plot(self.loss(self.x, self.y))
-            _ = np.sum(np.square(self.gradient))
-        print("Yay it converged!")
 
     def fit(self):
         """
         Performs Batch Gradient Descent
         """
-        #self.init_plot(self.FEATURES)
-        _ = 10000
-        while _ > CONVERGENCE_MARGIN:
-            self.compute_gradient_for_all()
+        self.init_plot(self.FEATURES)
 
-            for k in range(0, self.FEATURES):
-                self.theta[k] = self.theta[k] - LEARNING_RATE * self.gradient[k]
+        # YOUR CODE HERE
 
-            #self.update_plot(self.loss(self.x, self.y))
-            _ = np.sum(np.square(self.gradient))
-        print("Yay it converged!")
 
     def classify_datapoints(self, test_data, test_labels):
         """
         Classifies datapoints
         """
-        print('Model parameters:')
+        print('Model parameters:');
 
         print('  '.join('{:d}: {:.4f}'.format(k, self.theta[k]) for k in range(self.FEATURES)))
 
@@ -215,9 +176,11 @@ class BinaryLogisticRegression(object):
                 print('                 {:2d} '.format(i), end='')
             print(' '.join('{:>8.3f}'.format(confusion[i][j]) for j in range(2)))
 
+
     def print_result(self):
         print(' '.join(['{:.2f}'.format(x) for x in self.theta]))
         print(' '.join(['{:.2f}'.format(x) for x in self.gradient]))
+
 
     # ----------------------------------------------------------------------
 
@@ -241,6 +204,7 @@ class BinaryLogisticRegression(object):
         plt.draw()
         plt.pause(1e-20)
 
+
     def init_plot(self, num_axes):
         """
         num_axes is the number of variables that should be plotted.
@@ -249,13 +213,12 @@ class BinaryLogisticRegression(object):
         self.val = []
         plt.ion()
         self.axes = plt.gca()
-        self.lines = []
+        self.lines =[]
 
         for i in range(num_axes):
             self.val.append([])
             self.lines.append([])
-            self.lines[i], = self.axes.plot([], self.val[0], '-', c=[random.random() for _ in range(3)], linewidth=1.5,
-                                            markersize=4)
+            self.lines[i], = self.axes.plot([], self.val[0], '-', c=[random.random() for _ in range(3)], linewidth=1.5, markersize=4)
 
     # ----------------------------------------------------------------------
 
@@ -265,9 +228,9 @@ def main():
     Tests the code on a toy example.
     """
     x = [
-        [1, 1], [0, 0], [1, 0], [0, 0], [0, 0], [0, 0],
-        [0, 0], [0, 0], [1, 1], [0, 0], [0, 0], [1, 0],
-        [1, 0], [0, 0], [1, 1], [0, 0], [1, 0], [0, 0]
+        [ 1,1 ], [ 0,0 ], [ 1,0 ], [ 0,0 ], [ 0,0 ], [ 0,0 ],
+        [ 0,0 ], [ 0,0 ], [ 1,1 ], [ 0,0 ], [ 0,0 ], [ 1,0 ],
+        [ 1,0 ], [ 0,0 ], [ 1,1 ], [ 0,0 ], [ 1,0 ], [ 0,0 ]
     ]
 
     #  Encoding of the correct classes for the training material
