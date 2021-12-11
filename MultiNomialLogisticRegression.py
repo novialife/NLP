@@ -5,7 +5,7 @@ import random
 
 class MultiNomialLogisticRegression(object):
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, testdata=None):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
         self.MAX_ITERATIONS = 5000
@@ -27,14 +27,11 @@ class MultiNomialLogisticRegression(object):
         # The current gradient.
         self.gradient = np.zeros((6,self.FEATURES))
 
-
-        print(np.shape(self.x), "shape of x")
-        print(np.shape(self.y), "shape of y")
-        print(np.shape(self.theta), "shape of theta")
-        print(np.shape(self.gradient), "shape of gradient")
-
         self.fit()
-        #self.classify_datapoints(self.x, self.y)
+        if testdata is not None:
+            self.testdataDATAPOINTS = len(testdata)
+            self.testdata = np.concatenate((np.ones((self.testdataDATAPOINTS, 1)), np.array(testdata)), axis=1)
+            self.classify_datapoints()
 
     def loss(self, x, y):
         total = 0
@@ -72,5 +69,7 @@ class MultiNomialLogisticRegression(object):
         plt.plot(cost)
         plt.show()
 
-    def classify_datapoints(self, test_data, test_labels):
-        pass
+    def classify_datapoints(self):
+        probab = softmax(np.dot(self.testdata, self.theta.T))
+        predict = np.argmax(probab, axis=1)
+        print(predict)
