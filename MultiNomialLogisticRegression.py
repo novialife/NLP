@@ -8,7 +8,7 @@ class MultiNomialLogisticRegression(object):
     def __init__(self, x, y):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = 50000
+        self.MAX_ITERATIONS = 5000
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
@@ -34,6 +34,7 @@ class MultiNomialLogisticRegression(object):
         print(np.shape(self.gradient), "shape of gradient")
 
         self.fit()
+        #self.classify_datapoints(self.x, self.y)
 
     def loss(self, x, y):
         total = 0
@@ -45,11 +46,6 @@ class MultiNomialLogisticRegression(object):
         return total/self.DATAPOINTS
 
     def softmax(self, z):
-        # ezk = np.exp(z)
-        # sumezi = 0
-        # for i in range(0, len(z)):
-        #     sumezi += np.exp(z[i])
-        # return ezk / sumezi
         return np.exp(z) / np.sum(np.exp(z), axis=1).reshape(z.shape[0], 1)
 
     def conditional_prob(self, label, datapoint):
@@ -61,15 +57,17 @@ class MultiNomialLogisticRegression(object):
 
     def fit(self):
         cost = []
+        i = 0
         for i in range(self.MAX_ITERATIONS):
             dot = np.dot(self.x, self.theta.T)
             step = self.softmax(dot)
 
-            cost.append(np.sum(-np.log(self.softmax(np.dot(self.x, self.theta.T)))) / self.DATAPOINTS)
+            cost.append(-np.sum(self.y * np.log(step)) / self.DATAPOINTS)
 
-            self.gradient = self.x.T.dot((step - self.y))
+            self.gradient = np.dot((step - self.y).T, self.x)
             delta = (self.LEARNING_RATE/self.DATAPOINTS) * self.gradient
-            self.theta = self.theta - delta.T
+            self.theta = self.theta - delta
+            i = i+1
 
         plt.plot(cost)
         plt.show()
