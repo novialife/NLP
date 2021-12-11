@@ -4,12 +4,13 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from MultiNomialLogisticRegression import MultiNomialLogisticRegression
 
+
 class ParseXML:
 
     def __init__(self):
         args = sys.argv
-        train_file = args[1]
-        test_file = args[2]
+        self.train_file = args[1]
+        self.test_file = args[2]
 
         self.labelsNUMEX = {
             "FRQ": 4,
@@ -23,12 +24,8 @@ class ParseXML:
             "TIME": 2
         }
 
-        self.x = []
-        self.y = []
-        self.testdata = []
-
-        #self.readTraining(train_file)
-        self.readTest(test_file)
+        self.x, self.y, self.y_train = self.readXML(self.train_file)
+        self.testData, self.testY, self.y_test = self.readXML(self.test_file)
 
     def has_number(self, token):
         for elem in token:
@@ -80,51 +77,52 @@ class ParseXML:
         else:
             return 0
 
-    def evaluate(self, token, label):
+    def evaluate(self, token, label, x, y, y_num):
         token = token.split(" ")
-        datapoint = [self.has_number(token), self.age_feature(token), self.date_feature(token), self.time_feature(token),
+        datapoint = [self.has_number(token), self.age_feature(token), self.date_feature(token),
+                     self.time_feature(token),
                      self.distance_feature(token),
                      self.quantity_feature(token), self.money_feature(token)]
-        self.x.append(datapoint)
+        x.append(datapoint)
         _ = np.zeros(6)
         _[label] = 1
-        self.y.append(_)
+        y.append(_)
+        y_num.append(label)
+        return x, y, y_num
 
-    def readTraining(self, training_file):
-        root = ET.parse(training_file)
+    def readXML(self, file):
+        root = ET.parse(file)
         # Iteration when training
+
+        x = []
+        y = []
+        y_num = []
         for wordElement in root.iter():  # Iterate through each wordElement
             try:
                 token = wordElement.attrib["name"]
                 if wordElement.attrib["subtype"] in self.labelsNUMEX:  # If we are in NUMEX
-                    self.evaluate(token, self.labelsNUMEX[wordElement.attrib["subtype"]])
+                    x, y, y_num = self.evaluate(token, self.labelsNUMEX[wordElement.attrib["subtype"]], x, y, y_num)
                 elif wordElement.attrib["subtype"] == "DAT":  # If we are in TIMEX
                     if self.date_feature(token.split(" ")) == 0:
-                        self.x.append([self.has_number(token.split(" ")), 0, 0, 1, 0, 0, 0])
+                        x.append([self.has_number(token.split(" ")), 0, 0, 1, 0, 0, 0])
                         index = 3
                     else:
-                        self.x.append([self.has_number(token.split(" ")), 0, 1, 0, 0, 0, 0])
+                        x.append([self.has_number(token.split(" ")), 0, 1, 0, 0, 0, 0])
                         index = 2
+
                     _ = np.zeros(6)
                     _[index] = 1
-                    self.y.append(_)
+                    y.append(_)
+                    y_num.append(index)
             except KeyError:  # Only check for expressions
                 pass
 
-
-
-    def readTest(self, test_file):
-        root = ET.parse(test_file)
-        for wordElement in root.iter("ex"):  # Iterate through each wordElement
-            print(wordElement.text)
-            quit()
-
-
+        return x, y, y_num
 
 
 def main():
     temp = ParseXML()
-    MultiNomialLogisticRegression(temp.x, temp.y)
+    MultiNomialLogisticRegression(temp.x, temp.y, temp.y_train, temp.testData, temp.testY, temp.y_test)
 
 
 if __name__ == '__main__':

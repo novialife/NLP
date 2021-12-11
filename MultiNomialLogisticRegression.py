@@ -1,14 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 
 
 class MultiNomialLogisticRegression(object):
 
-    def __init__(self, x, y, testdata=None):
+    def __init__(self, x, y, y_train, testdata, testY, y_test):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = 5000
+        self.MAX_ITERATIONS = 50000
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
@@ -21,6 +20,13 @@ class MultiNomialLogisticRegression(object):
         # Correct labels for the datapoints.
         self.y = np.array(y)
 
+        self.testdataDATAPOINTS = len(testdata)
+        self.testY = np.array(testY)
+        self.testdata = np.concatenate((np.ones((self.testdataDATAPOINTS, 1)), np.array(testdata)), axis=1)
+
+        self.y_train = np.array(y_train)
+        self.y_test = np.array(y_test)
+
         # The weights we want to learn in the training phase.
         self.theta = np.random.uniform(-1, 1, size=(6,self.FEATURES))
 
@@ -28,10 +34,7 @@ class MultiNomialLogisticRegression(object):
         self.gradient = np.zeros((6,self.FEATURES))
 
         self.fit()
-        if testdata is not None:
-            self.testdataDATAPOINTS = len(testdata)
-            self.testdata = np.concatenate((np.ones((self.testdataDATAPOINTS, 1)), np.array(testdata)), axis=1)
-            self.classify_datapoints()
+        self.classify_datapoints()
 
     def loss(self, x, y):
         total = 0
@@ -70,6 +73,37 @@ class MultiNomialLogisticRegression(object):
         plt.show()
 
     def classify_datapoints(self):
-        probab = softmax(np.dot(self.testdata, self.theta.T))
+        probab = self.softmax(np.dot(self.testdata, self.theta.T))
         predict = np.argmax(probab, axis=1)
-        print(predict)
+
+        from sklearn import linear_model
+        from sklearn.metrics import mean_squared_error, explained_variance_score, accuracy_score
+
+        # train the model with training data
+        regr = linear_model.LogisticRegression()
+        regr.fit(self.x, self.y_train)
+
+        # Predict our test data
+        sklearn_predict = regr.predict(self.testdata)
+
+        print('Sklearn')
+        # coefficients
+        print('Coefficients: {}'.format(regr.coef_))
+        # Accuracy score
+        print("Accuracy score: %.2f" % accuracy_score(sklearn_predict, self.y_test))
+        # The mean squared error
+        print("Mean squared error: %.2f" % mean_squared_error(sklearn_predict, self.y_test))
+        # Explained variance score: 1 is perfect prediction
+        print('Variance score: %.2f' % explained_variance_score(self.y_test, sklearn_predict))
+
+        print('\n')
+
+        print('Our Model')
+        # coefficients
+        print('Coefficients: {}'.format(self.theta))
+        # Accuracy score
+        print("Accuracy score: %.2f" % accuracy_score(predict, self.y_test))
+        # The mean squared error
+        print("Mean squared error: %.2f" % mean_squared_error(predict, self.y_test))
+        # Explained variance score: 1 is perfect prediction
+        print('Variance score: %.2f' % explained_variance_score(self.y_test, predict))
