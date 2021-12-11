@@ -9,7 +9,7 @@ class ParseXML:
     def __init__(self):
         args = sys.argv
         train_file = args[1]
-        # test_file = args[2]
+        test_file = args[2]
 
         self.labelsNUMEX = {
             "FRQ": 4,
@@ -25,9 +25,10 @@ class ParseXML:
 
         self.x = []
         self.y = []
+        self.testdata = []
 
-        self.readXML(train_file)
-
+        #self.readTraining(train_file)
+        self.readTest(test_file)
 
     def has_number(self, token):
         for elem in token:
@@ -89,7 +90,7 @@ class ParseXML:
         _[label] = 1
         self.y.append(_)
 
-    def readXML(self, training_file):
+    def readTraining(self, training_file):
         root = ET.parse(training_file)
         # Iteration when training
         for wordElement in root.iter():  # Iterate through each wordElement
@@ -109,6 +110,16 @@ class ParseXML:
                     self.y.append(_)
             except KeyError:  # Only check for expressions
                 pass
+
+
+
+    def readTest(self, test_file):
+        root = ET.parse(test_file)
+        for wordElement in root.iter("ex"):  # Iterate through each wordElement
+            print(wordElement.text)
+            quit()
+
+
 
 
 def main():
