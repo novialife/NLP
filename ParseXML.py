@@ -19,11 +19,6 @@ class ParseXML:
             "CUR": 5
         }
 
-        self.labelsTIMEX = {
-            "DATE": 1,
-            "TIME": 2
-        }
-
         self.x, self.y, self.y_train = self.readXML(self.train_file)
         self.testData, self.testY, self.y_test = self.readXML(self.test_file)
 

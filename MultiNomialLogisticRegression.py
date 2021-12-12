@@ -7,7 +7,7 @@ class MultiNomialLogisticRegression(object):
     def __init__(self, x, y, y_train, testdata, testY, y_test):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = 50000
+        self.MAX_ITERATIONS = 500
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
@@ -28,13 +28,14 @@ class MultiNomialLogisticRegression(object):
         self.y_test = np.array(y_test)
 
         # The weights we want to learn in the training phase.
-        self.theta = np.random.uniform(-1, 1, size=(6,self.FEATURES))
+        self.theta = np.random.uniform(-1, 1, size=(6, self.FEATURES))
 
         # The current gradient.
-        self.gradient = np.zeros((6,self.FEATURES))
+        self.gradient = np.zeros((6, self.FEATURES))
 
         self.fit()
-        self.classify_datapoints()
+        #self.compare_results()
+        self.confusion()
 
     def loss(self, x, y):
         total = 0
@@ -43,7 +44,7 @@ class MultiNomialLogisticRegression(object):
                 if k == y[i]:
                     total += -np.log(self.softmax(np.multiply(self.theta[:][k], self.x[i][:])))
 
-        return total/self.DATAPOINTS
+        return total / self.DATAPOINTS
 
     def softmax(self, z):
         return np.exp(z) / np.sum(np.exp(z), axis=1).reshape(z.shape[0], 1)
@@ -65,14 +66,14 @@ class MultiNomialLogisticRegression(object):
             cost.append(-np.sum(self.y * np.log(step)) / self.DATAPOINTS)
 
             self.gradient = np.dot((step - self.y).T, self.x)
-            delta = (self.LEARNING_RATE/self.DATAPOINTS) * self.gradient
+            delta = (self.LEARNING_RATE / self.DATAPOINTS) * self.gradient
             self.theta = self.theta - delta
-            i = i+1
+            i = i + 1
 
         plt.plot(cost)
         plt.show()
 
-    def classify_datapoints(self):
+    def compare_results(self):
         probab = self.softmax(np.dot(self.testdata, self.theta.T))
         predict = np.argmax(probab, axis=1)
 
@@ -107,3 +108,10 @@ class MultiNomialLogisticRegression(object):
         print("Mean squared error: %.2f" % mean_squared_error(predict, self.y_test))
         # Explained variance score: 1 is perfect prediction
         print('Variance score: %.2f' % explained_variance_score(self.y_test, predict))
+
+    def confusion(self):
+        probab = self.softmax(np.dot(self.testdata, self.theta.T))
+        predict = np.argmax(probab, axis=1)
+        print(np.shape(predict))
+        print(np.unique(predict))
+        class_dict = {0:"AGE", 1:"", 2:"", 3:"", 4:"", 5:""}
