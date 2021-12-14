@@ -13,10 +13,10 @@ class ParseXML:
         self.test_file = args[2]
 
         self.labelsNUMEX = {
-            "FRQ": 4,
-            "DST": 3,
-            "AGE": 0,
-            "CUR": 5
+            "FRQ": 5,
+            "DST": 4,
+            "AGE": 1,
+            "CUR": 6
         }
 
         self.x, self.y, self.y_train = self.readXML(self.train_file)
@@ -34,7 +34,7 @@ class ParseXML:
         return 0
 
     def age_feature(self, token):
-        if any(x in token for x in ["gammal", "ung", "år", "månader", "gamla", "årsåldern", "åldern"]):
+        if any(x in token for x in ["gammal", "ung", "år", "månader", "gamla", "årsåldern", "åldern", "års"]):
             return 1
         else:
             return 0
@@ -79,7 +79,7 @@ class ParseXML:
                      self.distance_feature(token),
                      self.quantity_feature(token), self.money_feature(token)]
         x.append(datapoint)
-        _ = np.zeros(6)
+        _ = np.zeros(7)
         _[label] = 1
         y.append(_)
         y_num.append(label)
@@ -105,7 +105,7 @@ class ParseXML:
                         x.append([self.has_number(token.split(" ")), 0, 1, 0, 0, 0, 0])
                         index = 2
 
-                    _ = np.zeros(6)
+                    _ = np.zeros(7)
                     _[index] = 1
                     y.append(_)
                     y_num.append(index)

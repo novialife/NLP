@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import sys
 
 
 class MultiNomialLogisticRegression(object):
@@ -7,17 +9,19 @@ class MultiNomialLogisticRegression(object):
     def __init__(self, x, y, y_train, testdata, testY, y_test):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = 500
+        self.MAX_ITERATIONS = [1000, 5000, 10000, 25000, 50000, 100000, 250000]
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
         # Number of features.
         self.FEATURES = len(x[0]) + 1
-
         # Encoding of the data points (as a DATAPOINTS x FEATURES size array).
         self.x = np.concatenate((np.ones((self.DATAPOINTS, 1)), np.array(x)), axis=1)
 
-        # Correct labels for the datapoints.
+        # Correct labels for the datapoints.# Precision Score
+        #         print("Precision: %.2f" % precision_score(sklearn_predict, self.y_test))
+        #         # Recall Score
+        #         print("Recall Score: %.2f" % recall_score(sklearn_predict, self.y_test))
         self.y = np.array(y)
 
         self.testdataDATAPOINTS = len(testdata)
@@ -28,38 +32,25 @@ class MultiNomialLogisticRegression(object):
         self.y_test = np.array(y_test)
 
         # The weights we want to learn in the training phase.
-        self.theta = np.random.uniform(-1, 1, size=(6, self.FEATURES))
+        self.theta = np.random.uniform(-1, 1, size=(7, self.FEATURES))
 
         # The current gradient.
         self.gradient = np.zeros((6, self.FEATURES))
 
-        self.fit()
-        #self.compare_results()
-        self.confusion()
-
-    def loss(self, x, y):
-        total = 0
-        for i in range(self.DATAPOINTS):
-            for k in range(self.FEATURES):
-                if k == y[i]:
-                    total += -np.log(self.softmax(np.multiply(self.theta[:][k], self.x[i][:])))
-
-        return total / self.DATAPOINTS
+        for iteration in self.MAX_ITERATIONS:
+            f = open("outputs/" + str(iteration) + "_acc_pres_rec" + ".txt", 'w+')
+            sys.stdout = f
+            self.fit(iteration)
+            self.compare_results()
+            self.confusion()
+            f.close()
 
     def softmax(self, z):
         return np.exp(z) / np.sum(np.exp(z), axis=1).reshape(z.shape[0], 1)
 
-    def conditional_prob(self, label, datapoint):
-        prob = self.sigmoid(np.dot(self.x[datapoint][:], self.theta))
-        if label == 1:
-            return prob
-        else:
-            return 1 - prob
-
-    def fit(self):
+    def fit(self, iteration):
         cost = []
-        i = 0
-        for i in range(self.MAX_ITERATIONS):
+        for i in range(iteration):
             dot = np.dot(self.x, self.theta.T)
             step = self.softmax(dot)
 
@@ -68,17 +59,16 @@ class MultiNomialLogisticRegression(object):
             self.gradient = np.dot((step - self.y).T, self.x)
             delta = (self.LEARNING_RATE / self.DATAPOINTS) * self.gradient
             self.theta = self.theta - delta
-            i = i + 1
 
-        plt.plot(cost)
-        plt.show()
+        # plt.plot(cost)
+        # plt.show()
 
     def compare_results(self):
         probab = self.softmax(np.dot(self.testdata, self.theta.T))
         predict = np.argmax(probab, axis=1)
 
         from sklearn import linear_model
-        from sklearn.metrics import mean_squared_error, explained_variance_score, accuracy_score
+        from sklearn.metrics import mean_squared_error, explained_variance_score, accuracy_score, precision_score, recall_score
 
         # train the model with training data
         regr = linear_model.LogisticRegression()
@@ -88,10 +78,12 @@ class MultiNomialLogisticRegression(object):
         sklearn_predict = regr.predict(self.testdata)
 
         print('Sklearn')
-        # coefficients
-        print('Coefficients: {}'.format(regr.coef_))
         # Accuracy score
         print("Accuracy score: %.2f" % accuracy_score(sklearn_predict, self.y_test))
+        # Precision Score
+        print("Precision: %.2f" % precision_score(sklearn_predict, self.y_test, average=None))
+        # Recall Score
+        print("Recall Score: %.2f" % recall_score(sklearn_predict, self.y_test, average=None))
         # The mean squared error
         print("Mean squared error: %.2f" % mean_squared_error(sklearn_predict, self.y_test))
         # Explained variance score: 1 is perfect prediction
@@ -100,10 +92,11 @@ class MultiNomialLogisticRegression(object):
         print('\n')
 
         print('Our Model')
-        # coefficients
-        print('Coefficients: {}'.format(self.theta))
-        # Accuracy score
         print("Accuracy score: %.2f" % accuracy_score(predict, self.y_test))
+        # Precision Score
+        print("Precision: %.2f" % precision_score(predict, self.y_test, average=None))
+        # Recall Score
+        print("Recall Score: %.2f" % recall_score(predict, self.y_test, average=None))
         # The mean squared error
         print("Mean squared error: %.2f" % mean_squared_error(predict, self.y_test))
         # Explained variance score: 1 is perfect prediction
@@ -112,6 +105,13 @@ class MultiNomialLogisticRegression(object):
     def confusion(self):
         probab = self.softmax(np.dot(self.testdata, self.theta.T))
         predict = np.argmax(probab, axis=1)
-        print(np.shape(predict))
-        print(np.unique(predict))
-        class_dict = {0:"AGE", 1:"", 2:"", 3:"", 4:"", 5:""}
+
+        class_dict = {1: "AGE", 2: "TIME", 3: "DATE", 4: "DISTANCE", 5: "AMOUNT", 6: "MONEY"}
+        row_labels = col_labels = list(class_dict.values())
+        data = np.zeros((self.FEATURES - 2, self.FEATURES - 2))
+        df = pd.DataFrame(data, columns=col_labels, index=row_labels)
+
+        for prediction in range(len(predict)):
+            df[class_dict[predict[prediction]]][class_dict[self.y_test[prediction]]] += 1
+
+        print(df)
