@@ -54,6 +54,7 @@ class MultiNomialLogisticRegression(object):
 
     def fit(self, iteration):
         cost = []
+        self.init_plot(self.FEATURES)
         for i in range(iteration):
             dot = np.dot(self.x, self.theta.T)
             step = self.softmax(dot)
@@ -63,6 +64,7 @@ class MultiNomialLogisticRegression(object):
             self.gradient = np.dot((step - self.y).T, self.x)
             delta = (self.LEARNING_RATE / self.DATAPOINTS) * self.gradient
             self.theta = self.theta - delta
+            self.update_plot(cost[i])
 
         # plt.plot(cost)
         # plt.show()
@@ -86,9 +88,9 @@ class MultiNomialLogisticRegression(object):
         # Accuracy score
         print("Accuracy score: %.2f" % accuracy_score(sklearn_predict, self.y_test))
         # Precision Score
-        #print("Precision: %.2f" % precision_score(sklearn_predict, self.y_test, average=None))
+        # print("Precision: %.2f" % precision_score(sklearn_predict, self.y_test, average=None))
         # Recall Score
-        #print("Recall Score: %.2f" % recall_score(sklearn_predict, self.y_test, average=None))
+        # print("Recall Score: %.2f" % recall_score(sklearn_predict, self.y_test, average=None))
         # The mean squared error
         print("Mean squared error: %.2f" % mean_squared_error(sklearn_predict, self.y_test))
         # Explained variance score: 1 is perfect prediction
@@ -99,9 +101,9 @@ class MultiNomialLogisticRegression(object):
         print('Our Model')
         print("Accuracy score: %.2f" % accuracy_score(predict, self.y_test))
         # Precision Score
-        #print("Precision: %.2f" % precision_score(predict, self.y_test, average=None))
+        # print("Precision: %.2f" % precision_score(predict, self.y_test, average=None))
         # Recall Score
-        #print("Recall Score: %.2f" % recall_score(predict, self.y_test, average=None))
+        # print("Recall Score: %.2f" % recall_score(predict, self.y_test, average=None))
         # The mean squared error
         print("Mean squared error: %.2f" % mean_squared_error(predict, self.y_test))
         # Explained variance score: 1 is perfect prediction
@@ -117,32 +119,61 @@ class MultiNomialLogisticRegression(object):
         df = pd.DataFrame(data, columns=col_labels, index=row_labels)
 
         for prediction in range(0, len(predict)):
-            # print(prediction)
-            # print(predict[prediction])
-            # print(class_dict[predict[prediction]])
-            # print(self.y_test[prediction])
-            # print(class_dict[self.y_test[prediction]])
             df[class_dict[predict[prediction]]][class_dict[self.y_test[prediction]]] += 1
 
         self.confusion_matrix = df
         print(df)
 
-    def accuracy(self):
-        pass
-
     def prescision(self):
         class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
         for i in range(self.confusion_matrix.shape[1]):
-            numerator = self.confusion_matrix.iat[i,i]
+            numerator = self.confusion_matrix.iat[i, i]
             denominator = self.confusion_matrix.iloc[i].sum()
             prescision = numerator / denominator
             print("Prescision for " + class_dict[i], prescision)
 
-
     def recall(self):
         class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
         for i in range(self.confusion_matrix.shape[1]):
-            numerator = self.confusion_matrix.iat[i,i]
+            numerator = self.confusion_matrix.iat[i, i]
             denominator = self.confusion_matrix.iloc[:, i].sum()
             recall = numerator / denominator
             print("Recall for " + class_dict[i], recall)
+
+    # ------------------------------ PLOT FUNCTIONS ------------------------------------------------------#
+
+    def init_plot(self, num_axes):
+        """
+        num_axes is the number of variables that should be plotted.
+        """
+        self.i = []
+        self.val = []
+        plt.ion()
+        self.axes = plt.gca()
+        self.lines = []
+
+        for i in range(num_axes):
+            self.val.append([])
+            self.lines.append([])
+            self.lines[i], = self.axes.plot([], self.val[0], '-', c=[random.random() for _ in range(3)], linewidth=1.5,
+                                            markersize=4)
+
+    def update_plot(self, *args):
+        """
+        Handles the plotting
+        """
+        if self.i == []:
+            self.i = [0]
+        else:
+            self.i.append(self.i[-1] + 1)
+
+        for index, val in enumerate(args):
+            self.val[index].append(val)
+            self.lines[index].set_xdata(self.i)
+            self.lines[index].set_ydata(self.val[index])
+
+        self.axes.set_xlim(0, max(self.i) * 1.5)
+        self.axes.set_ylim(0, max(max(self.val)) * 1.5)
+
+        plt.draw()
+        plt.pause(1e-20)
