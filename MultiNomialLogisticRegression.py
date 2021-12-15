@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+import random
 
 
 class MultiNomialLogisticRegression(object):
@@ -9,7 +10,7 @@ class MultiNomialLogisticRegression(object):
     def __init__(self, x, y, y_train, testdata, testY, y_test):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = []
+        self.MAX_ITERATIONS = [50]
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
@@ -36,10 +37,10 @@ class MultiNomialLogisticRegression(object):
         for iteration in self.MAX_ITERATIONS:
             print("Iterations =", str(iteration))
             self.fit(iteration)
-            self.compare_results()
-            self.confusion()
-            self.prescision()
-            self.recall()
+            # self.compare_results()
+            # self.confusion()
+            # self.prescision()
+            # self.recall()
 
         # for iteration in self.MAX_ITERATIONS:
         #     f = open("outputs/" + str(iteration) + "_acc_pres_rec" + ".txt", 'w+')
@@ -54,7 +55,6 @@ class MultiNomialLogisticRegression(object):
 
     def fit(self, iteration):
         cost = []
-        self.init_plot(self.FEATURES)
         for i in range(iteration):
             dot = np.dot(self.x, self.theta.T)
             step = self.softmax(dot)
@@ -64,7 +64,7 @@ class MultiNomialLogisticRegression(object):
             self.gradient = np.dot((step - self.y).T, self.x)
             delta = (self.LEARNING_RATE / self.DATAPOINTS) * self.gradient
             self.theta = self.theta - delta
-            self.update_plot(cost[i])
+
 
         # plt.plot(cost)
         # plt.show()
@@ -139,41 +139,3 @@ class MultiNomialLogisticRegression(object):
             denominator = self.confusion_matrix.iloc[:, i].sum()
             recall = numerator / denominator
             print("Recall for " + class_dict[i], recall)
-
-    # ------------------------------ PLOT FUNCTIONS ------------------------------------------------------#
-
-    def init_plot(self, num_axes):
-        """
-        num_axes is the number of variables that should be plotted.
-        """
-        self.i = []
-        self.val = []
-        plt.ion()
-        self.axes = plt.gca()
-        self.lines = []
-
-        for i in range(num_axes):
-            self.val.append([])
-            self.lines.append([])
-            self.lines[i], = self.axes.plot([], self.val[0], '-', c=[random.random() for _ in range(3)], linewidth=1.5,
-                                            markersize=4)
-
-    def update_plot(self, *args):
-        """
-        Handles the plotting
-        """
-        if self.i == []:
-            self.i = [0]
-        else:
-            self.i.append(self.i[-1] + 1)
-
-        for index, val in enumerate(args):
-            self.val[index].append(val)
-            self.lines[index].set_xdata(self.i)
-            self.lines[index].set_ydata(self.val[index])
-
-        self.axes.set_xlim(0, max(self.i) * 1.5)
-        self.axes.set_ylim(0, max(max(self.val)) * 1.5)
-
-        plt.draw()
-        plt.pause(1e-20)
