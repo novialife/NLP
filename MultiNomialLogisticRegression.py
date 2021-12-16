@@ -3,14 +3,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 import random
+from ParseFunctions import parseSentence
 
 
 class MultiNomialLogisticRegression(object):
 
-    def __init__(self, x, y, y_train, testdata, testY, y_test):
+    def __init__(self, x, y, y_train, testdata, y_test):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = [50]
+        self.MAX_ITERATIONS = [1]
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
@@ -22,7 +23,6 @@ class MultiNomialLogisticRegression(object):
         self.y = np.array(y)
 
         self.testdataDATAPOINTS = len(testdata)
-        self.testY = np.array(testY)
         self.testdata = np.concatenate((np.ones((self.testdataDATAPOINTS, 1)), np.array(testdata)), axis=1)
 
         self.y_train = np.array(y_train)
@@ -37,10 +37,22 @@ class MultiNomialLogisticRegression(object):
         for iteration in self.MAX_ITERATIONS:
             print("Iterations =", str(iteration))
             self.fit(iteration)
-            # self.compare_results()
-            # self.confusion()
-            # self.prescision()
-            # self.recall()
+            askSentence = input("Do you want to enter a sentence? y/n")
+            if askSentence == "y":
+                sentence = input("Type a sentence")
+                self.predict_input(sentence)
+                again = ""
+                while again != "n":
+                    again = input("Want to do it again? y/n")
+                    if again == "n":
+                        break
+                    sentence = input("Type a sentence")
+                    self.predict_input(sentence)
+            else:
+                self.compare_results()
+                self.confusion()
+                self.prescision()
+                self.recall()
 
         # for iteration in self.MAX_ITERATIONS:
         #     f = open("outputs/" + str(iteration) + "_acc_pres_rec" + ".txt", 'w+')
@@ -51,6 +63,8 @@ class MultiNomialLogisticRegression(object):
         #     f.close()
 
     def softmax(self, z):
+        if len(np.shape(z)) == 1:
+            return np.exp(z) / np.sum(np.exp(z))
         return np.exp(z) / np.sum(np.exp(z), axis=1).reshape(z.shape[0], 1)
 
     def fit(self, iteration):
@@ -64,7 +78,6 @@ class MultiNomialLogisticRegression(object):
             self.gradient = np.dot((step - self.y).T, self.x)
             delta = (self.LEARNING_RATE / self.DATAPOINTS) * self.gradient
             self.theta = self.theta - delta
-
 
         # plt.plot(cost)
         # plt.show()
@@ -123,6 +136,15 @@ class MultiNomialLogisticRegression(object):
 
         self.confusion_matrix = df
         print(df)
+
+    def predict_input(self, sentence):
+        x = parseSentence(sentence)
+        x = np.insert(x, 0, 1, axis=0)
+        probab = self.softmax(np.dot(x, self.theta.T))
+        predict = np.argmax(probab, axis=0)
+
+        class_dict = {1: "AGE", 2: "TIME", 3: "DATE", 4: "DISTANCE", 5: "AMOUNT", 6: "MONEY"}
+        print("The model predicts: ", class_dict[predict])
 
     def prescision(self):
         class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
