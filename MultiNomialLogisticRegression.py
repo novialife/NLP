@@ -11,7 +11,7 @@ class MultiNomialLogisticRegression(object):
     def __init__(self, x, y, y_train, testdata, y_test):
         self.LEARNING_RATE = 0.001  # The learning rate.
         self.CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-        self.MAX_ITERATIONS = [1]
+        self.MAX_ITERATIONS = [25000]
         # Number of datapoints.
         self.DATAPOINTS = len(x)
 
@@ -29,10 +29,13 @@ class MultiNomialLogisticRegression(object):
         self.y_test = np.array(y_test)
 
         # The weights we want to learn in the training phase.
-        self.theta = np.random.uniform(-1, 1, size=(7, self.FEATURES))
+        self.theta = np.random.uniform(-1, 1, size=(6, self.FEATURES))
 
         # The current gradient.
         self.gradient = np.zeros((6, self.FEATURES))
+
+        self.class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
+
 
         for iteration in self.MAX_ITERATIONS:
             print("Iterations =", str(iteration))
@@ -72,6 +75,13 @@ class MultiNomialLogisticRegression(object):
         for i in range(iteration):
             dot = np.dot(self.x, self.theta.T)
             step = self.softmax(dot)
+
+            # print(np.shape(self.x), "x")
+            # print(np.shape(self.y), "y")
+            # print(np.shape(dot), "The dot product")
+            # print(np.shape(step), "The softmax output")
+            # print(np.shape(self.gradient), "gradient")
+            # print(np.shape(self.theta), "theta")
 
             cost.append(-np.sum(self.y * np.log(step)) / self.DATAPOINTS)
 
@@ -126,13 +136,13 @@ class MultiNomialLogisticRegression(object):
         probab = self.softmax(np.dot(self.testdata, self.theta.T))
         predict = np.argmax(probab, axis=1)
 
-        class_dict = {1: "AGE", 2: "TIME", 3: "DATE", 4: "DISTANCE", 5: "AMOUNT", 6: "MONEY"}
+        class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
         row_labels = col_labels = list(class_dict.values())
         data = np.zeros((self.FEATURES - 2, self.FEATURES - 2))
         df = pd.DataFrame(data, columns=col_labels, index=row_labels)
 
         for prediction in range(0, len(predict)):
-            df[class_dict[predict[prediction]]][class_dict[self.y_test[prediction]]] += 1
+            df[self.class_dict[predict[prediction]]][self.class_dict[self.y_test[prediction]]] += 1
 
         self.confusion_matrix = df
         print(df)
@@ -143,21 +153,18 @@ class MultiNomialLogisticRegression(object):
         probab = self.softmax(np.dot(x, self.theta.T))
         predict = np.argmax(probab, axis=0)
 
-        class_dict = {1: "AGE", 2: "TIME", 3: "DATE", 4: "DISTANCE", 5: "AMOUNT", 6: "MONEY"}
-        print("The model predicts: ", class_dict[predict])
+        print("The model predicts: ", self.class_dict[predict])
 
     def prescision(self):
-        class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
         for i in range(self.confusion_matrix.shape[1]):
             numerator = self.confusion_matrix.iat[i, i]
             denominator = self.confusion_matrix.iloc[i].sum()
             prescision = numerator / denominator
-            print("Prescision for " + class_dict[i], prescision)
+            print("Prescision for " + self.class_dict[i], prescision)
 
     def recall(self):
-        class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
         for i in range(self.confusion_matrix.shape[1]):
             numerator = self.confusion_matrix.iat[i, i]
             denominator = self.confusion_matrix.iloc[:, i].sum()
             recall = numerator / denominator
-            print("Recall for " + class_dict[i], recall)
+            print("Recall for " + self.class_dict[i], recall)

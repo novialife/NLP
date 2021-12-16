@@ -10,10 +10,10 @@ class ParseXML:
 
     def __init__(self, sentence=None):
         self.labelsNUMEX = {
-            "FRQ": 5,
-            "DST": 4,
-            "AGE": 1,
-            "CUR": 6
+            "FRQ": 4,
+            "DST": 3,
+            "AGE": 0,
+            "CUR": 5
         }
 
         args = sys.argv
@@ -30,7 +30,7 @@ class ParseXML:
                      distance_feature(token),
                      quantity_feature(token), money_feature(token)]
         x.append(datapoint)
-        _ = np.zeros(7)
+        _ = np.zeros(6)
         _[label] = 1
         y.append(_)
         y_num.append(label)
@@ -51,12 +51,12 @@ class ParseXML:
                 elif wordElement.attrib["subtype"] == "DAT":  # If we are in TIMEX
                     if date_feature(token.split(" ")) == 0:
                         x.append([has_number(token.split(" ")), 0, 0, 1, 0, 0, 0])
-                        index = 3
+                        index = 2
                     else:
                         x.append([has_number(token.split(" ")), 0, 1, 0, 0, 0, 0])
-                        index = 2
+                        index = 1
 
-                    _ = np.zeros(7)
+                    _ = np.zeros(6)
                     _[index] = 1
                     y.append(_)
                     y_num.append(index)
