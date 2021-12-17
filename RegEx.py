@@ -18,7 +18,7 @@ class RegEx:
         self.testData = self.parse.testData
         self.y_test = self.parse.y_test
         self.testY = self.parse.testY
-        self.class_dict = {1: "AGE", 2: "TIME", 3: "DATE", 4: "DISTANCE", 5: "AMOUNT", 6: "MONEY"}
+        self.class_dict = {0: "AGE", 1: "TIME", 2: "DATE", 3: "DISTANCE", 4: "AMOUNT", 5: "MONEY"}
         self.FEATURES = len(self.testData[0])
         self.classify()
         f = open("outputs/" + "regex.txt", 'w+')
@@ -37,22 +37,18 @@ class RegEx:
                 point.remove(1)
 
             count = 0
-            indexes = 0
+            indexes = []
             i = 0
             for ones in point:
                 if ones == 1:
-                    indexes += i
-                    count += 1
+                    indexes.append(i)
                 i += 1
 
-            if count == 0:
-                self.predict.append(random.randint(1, 6))
+            if len(indexes) == 0:
+                self.predict.append(random.randint(0, 5))
             else:
-                if int(math.ceil(indexes / count)) == 0:
-                    self.predict.append(1)
-                else:
-                    self.predict.append(int(math.ceil(indexes / count)))
-
+                self.predict.append(random.choice(indexes))
+        print(np.unique(self.predict))
     def confusion(self):
         row_labels = col_labels = list(self.class_dict.values())
         data = np.zeros((self.FEATURES - 1, self.FEATURES - 1))
