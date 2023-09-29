@@ -1,2 +1,0 @@
-Sklearn
-Accuracy score: 0.99
