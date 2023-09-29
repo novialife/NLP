@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-This file is part of the computer assignments for the course DD1418/DD2418 Language engineering at KTH.
+This file is part of the computer assignments for the course xx at KTH.
 Created 2017 by Johan Boye, Patrik Jonell and Dmytro Kalpakchi.
 """
 
